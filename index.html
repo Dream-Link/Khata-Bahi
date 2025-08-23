@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="hi" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#2563eb"/>
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon-192x192.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+    <title>खाता बही</title>
+    <style>
+        :root { --background-primary: #f8f9fa; --background-secondary: #ffffff; --text-primary: #1f2937; --text-secondary: #4b5563; --border-color: #e5e7eb; --primary-color: #2563eb; --primary-text: #ffffff; --danger-color: #dc2626; --success-color: #10b981; --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05); --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); --radius-md: 8px; --radius-lg: 16px; }
+        [data-theme="dark"] { --background-primary: #111827; --background-secondary: #1f2937; --text-primary: #f9fafb; --text-secondary: #9ca3af; --border-color: #374151; --primary-color: #3b82f6; }
+        [data-theme="rose"] { --primary-color: #d53f8c; --background-primary: #fff5f7; --background-secondary: #fffafd; }
+        [data-theme="ocean"] { --primary-color: #3182ce; --background-primary: #ebf8ff; --background-secondary: #f0f9ff; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Poppins', sans-serif; background: var(--background-primary); color: var(--text-primary); margin: 0 0 80px 0; min-height: 100vh; transition: background-color 0.3s, color 0.3s; }
+        .header { background: var(--primary-color); color: var(--primary-text); padding: 12px 20px; text-align: center; font-size: 18px; font-weight: 600; }
+        .fab { position: fixed; bottom: 85px; right: 20px; width: 56px; height: 56px; background: var(--primary-color); color: var(--primary-text); border: none; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: var(--shadow-md); cursor: pointer; z-index: 999; transition: transform 0.2s, background-color 0.3s; }
+        .fab:active { transform: scale(0.95); }
+        .tab-bar { position: fixed; bottom: 0; left: 0; right: 0; height: 65px; background: var(--background-secondary); display: flex; justify-content: space-around; align-items: center; box-shadow: 0 -2px 5px rgba(0,0,0,0.1); z-index: 1000; border-top: 1px solid var(--border-color); }
+        .tab-button { background: none; border: none; color: var(--text-secondary); display: flex; flex-direction: column; align-items: center; font-size: 12px; cursor: pointer; padding: 10px; border-radius: var(--radius-md); width: 80px; }
+        .tab-button.active { color: var(--primary-color); }
+        .tab-button i { font-size: 22px; margin-bottom: 4px; }
+        .page { display: none; animation: fadeIn 0.4s ease; }
+        .page.active { display: block; }
+        @keyframes fadeIn { from: { opacity: 0; transform: translateY(10px); } to: { opacity: 1; transform: translateY(0); } }
+        .content-padding { padding: 15px; }
+        .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .dashboard-card { background: var(--background-secondary); border-radius: var(--radius-lg); padding: 20px; text-align: center; box-shadow: var(--shadow-sm); }
+        .dashboard-card .title { font-size: 14px; color: var(--text-secondary); }
+        .dashboard-card .value { font-size: 28px; font-weight: 700; color: var(--primary-color); margin-top: 5px; }
+        .page-title { font-size: 16px; font-weight: 600; color: var(--text-secondary); margin-bottom: 15px; }
+        .search-bar { display: flex; margin-bottom: 15px; background: var(--background-secondary); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); padding: 5px; }
+        .search-bar input { flex: 1; border: none; background: transparent; padding: 10px; font-size: 16px; color: var(--text-primary); }
+        .search-bar input:focus { outline: none; }
+        .search-bar i { color: var(--text-secondary); padding: 10px; }
+        .customer-box { background: var(--background-secondary); border-radius: var(--radius-lg); margin-bottom: 15px; box-shadow: var(--shadow-md); cursor: pointer; transition: transform 0.2s; }
+        .customer-box:active { transform: scale(0.98); }
+        .customer-box-header { padding: 15px; display: flex; justify-content: space-between; align-items: center; border-left: 5px solid transparent; border-radius: var(--radius-lg); }
+        .customer-box-header.balance-due { border-left-color: var(--danger-color); }
+        .customer-name { font-weight: 600; font-size: 18px; }
+        .customer-balance { font-weight: 700; font-size: 18px; }
+        .customer-balance.due { color: var(--danger-color); }
+        .popup-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 1001; }
+        .popup { background: var(--background-secondary); border-radius: var(--radius-lg); width: 95%; max-width: 400px; max-height: 90vh; overflow-y: auto; animation: slideUp 0.3s ease-out; }
+        @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .popup-header { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; border-bottom: 1px solid var(--border-color); }
+        .popup-title { font-size: 18px; font-weight: 600; }
+        .popup-content { padding: 20px; }
+        .close-btn { background: none; border: none; font-size: 20px; color: var(--text-secondary); cursor: pointer; }
+        .form-input { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 16px; background-color: var(--background-primary); color: var(--text-primary); }
+        .btn { border: none; padding: 12px 16px; border-radius: var(--radius-md); font-size: 16px; font-weight: 600; cursor: pointer; transition: transform 0.2s; }
+        .btn-primary { background: var(--primary-color); color: var(--primary-text); width: 100%; }
+        .btn-success { background: var(--success-color); color: white; }
+        .btn-danger { background: var(--danger-color); color: white; }
+        .form-group { margin-bottom: 15px; position: relative; }
+        .form-label { display: block; margin-bottom: 5px; font-weight: 500; font-size: 14px; }
+        .empty-state { text-align: center; color: var(--text-secondary); padding: 40px 20px; }
+        .customer-detail-page { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--background-primary); z-index: 1002; transform: translateX(100%); transition: transform 0.3s ease-in-out; overflow-y: auto; }
+        .customer-detail-page.active { transform: translateX(0); }
+        .detail-header { display: flex; align-items: center; background: var(--background-secondary); padding: 12px 15px; border-bottom: 1px solid var(--border-color); position: sticky; top: 0; z-index: 1; }
+        .detail-header .back-btn { background: none; border: none; font-size: 20px; color: var(--text-primary); cursor: pointer; margin-right: 15px; }
+        .detail-header-info h2 { font-size: 18px; }
+        .detail-header-info p { font-size: 20px; font-weight: 700; }
+        .transaction-list { padding: 15px; }
+        .transaction { display: flex; justify-content: space-between; align-items: center; padding: 15px; background: var(--background-secondary); border-radius: var(--radius-md); margin-bottom: 10px; box-shadow: var(--shadow-sm); }
+        .transaction .desc { font-weight: 500; }
+        .transaction .date { font-size: 12px; color: var(--text-secondary); }
+        .transaction .amount { font-size: 18px; font-weight: 600; }
+        .transaction.credit .amount { color: var(--danger-color); }
+        .transaction.debit .amount { color: var(--success-color); }
+        .detail-actions { display: flex; gap: 10px; padding: 0 15px 15px 15px; }
+        .autocomplete-results { position: absolute; top: 100%; left: 0; right: 0; background: var(--background-secondary); border: 1px solid var(--border-color); border-top: none; border-radius: 0 0 var(--radius-md) var(--radius-md); max-height: 150px; overflow-y: auto; z-index: 1002; }
+        .autocomplete-item { padding: 12px; cursor: pointer; }
+        .autocomplete-item:hover { background-color: var(--background-primary); }
+        .toggle-switch { display: flex; border: 1px solid var(--border-color); border-radius: var(--radius-md); overflow: hidden; margin-bottom: 15px; }
+        .toggle-btn { flex: 1; padding: 10px; text-align: center; background: var(--background-primary); border: none; cursor: pointer; font-weight: 600; color: var(--text-secondary); }
+        .toggle-btn.active { background: var(--primary-color); color: var(--primary-text); }
+        .section-title { font-weight: 600; font-size: 16px; margin-top: 20px; margin-bottom: 10px; padding-bottom: 5px; border-bottom: 2px solid var(--border-color); }
+        .theme-selector { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 10px; margin-top: 10px; }
+        .theme-button { border: 2px solid var(--border-color); background: var(--background-secondary); padding: 10px; border-radius: var(--radius-md); text-align: center; cursor: pointer; font-size: 12px; transition: border-color 0.2s, box-shadow 0.2s; }
+        .theme-button.active { border-color: var(--primary-color); box-shadow: 0 0 8px -2px var(--primary-color); }
+        .theme-preview { width: 40px; height: 20px; border-radius: 4px; margin: 0 auto 5px auto; background: var(--primary-color); }
+        .data-management .btn { margin-top: 10px; display: block; width: 100%;}
+    </style>
+</head>
+<body>
+
+    <div id="homePage" class="page active">
+        <div class="header"><h1 id="ledgerNameHeader">खाता बही</h1></div>
+        <div class="content-padding">
+            <div class="dashboard-grid">
+                <div class="dashboard-card">
+                    <div class="title">आज की कुल उधारी</div>
+                    <div class="value" id="todayTotalCredit">₹0</div>
+                </div>
+                <div class="dashboard-card">
+                    <div class="title">आज के ग्राहक</div>
+                    <div class="value" id="todayCustomerCount">0</div>
+                </div>
+            </div>
+            <div class="page-title">आज का लेन-देन</div>
+            <div id="todayCustomerList"></div>
+        </div>
+    </div>
+
+    <div id="udharBahiPage" class="page">
+        <div class="header"><h1>उधार बही</h1></div>
+        <div class="content-padding">
+            <div class="search-bar">
+                <i class="fas fa-search"></i>
+                <input type="text" id="bahiSearch" placeholder="पूरी बही में खोजें...">
+            </div>
+            <div id="bahiCustomerList"></div>
+        </div>
+    </div>
+    
+    <div id="settingsPage" class="page">
+        <div class="header"><h1>सेटिंग्स</h1></div>
+         <div class="content-padding">
+            <div class="form-group">
+                <label class="form-label">खाता बही का नाम</label>
+                <input type="text" class="form-input" id="newLedgerName">
+                <button class="btn btn-primary" onclick="updateLedgerName()" style="margin-top: 10px;"><i class="fas fa-save"></i> नाम अपडेट करें</button>
+            </div>
+            <div class="section-title">थीम चुनें</div>
+            <div id="themeSelector" class="theme-selector"></div>
+            <div class="data-management">
+                <div class="section-title">डेटा मैनेजमेंट</div>
+                <button class="btn btn-success" onclick="exportData()"><i class="fas fa-download"></i> डेटा एक्सपोर्ट करें</button>
+                <button class="btn btn-primary" onclick="document.getElementById('importFile').click()"><i class="fas fa-upload"></i> डेटा इम्पोर्ट करें</button>
+                <input type="file" id="importFile" accept=".json" style="display:none;">
+                <button class="btn btn-danger" onclick="deleteAllData()"><i class="fas fa-trash-alt"></i> सारा डेटा डिलीट करें</button>
+            </div>
+         </div>
+    </div>
+    
+    <div id="customerDetailPage" class="customer-detail-page"></div>
+
+    <div class="popup-overlay" id="popupOverlay"></div>
+
+    <button class="fab" onclick="openTransactionPopup()" title="नया लेन-देन"><i class="fas fa-plus"></i></button>
+    
+    <nav class="tab-bar">
+        <button class="tab-button active" data-page="homePage"><i class="fas fa-home"></i><span>होम</span></button>
+        <button class="tab-button" data-page="udharBahiPage"><i class="fas fa-book"></i><span>उधार बही</span></button>
+        <button class="tab-button" data-page="settingsPage"><i class="fas fa-cog"></i><span>सेटिंग्स</span></button>
+    </nav>
+    
+    <script>
+        // --- Global State ---
+        let customers = {}; // Active customers with balance
+        let historyLog = {}; // Settled customers
+        let ledgerName = 'खाता बही';
+        const themes = [ { id: 'light', name: 'सिंपल', color: '#2563eb' }, { id: 'dark', name: 'डार्क', color: '#3b82f6' }, { id: 'rose', name: 'रोज़', color: '#d53f8c' }, { id: 'ocean', name: 'ओशन', color: '#3182ce' }];
+        
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            loadData();
+            renderHomePage();
+            setupEventListeners();
+            history.replaceState({page: 'homePage'}, '', '#homePage');
+        });
+
+        function setupEventListeners() {
+            document.querySelector('.tab-bar').addEventListener('click', (e) => {
+                const button = e.target.closest('.tab-button');
+                if (button) switchTab(button.dataset.page);
+            });
+            document.getElementById('bahiSearch').addEventListener('input', (e) => renderBahiPage(e.target.value.toLowerCase()));
+            document.getElementById('importFile').addEventListener('change', importData);
+        }
+        
+        // --- Data Management ---
+        function loadData() {
+            customers = JSON.parse(localStorage.getItem('khataBahiCustomers')) || {};
+            historyLog = JSON.parse(localStorage.getItem('khataBahiHistory')) || {};
+            ledgerName = localStorage.getItem('khataBahiLedgerName') || 'खाता बही';
+            document.getElementById('ledgerNameHeader').textContent = ledgerName;
+        }
+        function saveData() {
+            localStorage.setItem('khataBahiCustomers', JSON.stringify(customers));
+            localStorage.setItem('khataBahiHistory', JSON.stringify(historyLog));
+            localStorage.setItem('khataBahiLedgerName', ledgerName);
+        }
+        
+        // --- UI Rendering ---
+        function renderHomePage() {
+            const todayString = new Date().toDateString();
+            let todayTotalCredit = 0;
+            const todayCustomers = new Set();
+            
+            const todayTxCustomers = Object.keys(customers).filter(name => 
+                customers[name].transactions.some(tx => new Date(tx.date).toDateString() === todayString)
+            );
+
+            todayTxCustomers.forEach(name => {
+                customers[name].transactions.forEach(tx => {
+                    if (new Date(tx.date).toDateString() === todayString) {
+                        todayCustomers.add(name);
+                        if (tx.type === 'credit') {
+                            todayTotalCredit += tx.amount;
+                        }
+                    }
+                });
+            });
+
+            document.getElementById('todayTotalCredit').textContent = `₹${todayTotalCredit}`;
+            document.getElementById('todayCustomerCount').textContent = todayCustomers.size;
+            
+            const listDiv = document.getElementById('todayCustomerList');
+            if (todayTxCustomers.length === 0) {
+                listDiv.innerHTML = `<div class="empty-state"><p>आज कोई लेन-देन नहीं हुआ है।</p></div>`;
+            } else {
+                listDiv.innerHTML = todayTxCustomers
+                    .sort((a,b) => new Date(customers[b].transactions[0].date) - new Date(customers[a].transactions[0].date))
+                    .map(name => customerBoxHTML(name, customers[name]))
+                    .join('');
+            }
+        }
+
+        function renderBahiPage(filter = '') {
+            const listDiv = document.getElementById('bahiCustomerList');
+            const filteredCustomers = Object.keys(customers).filter(name => name.toLowerCase().includes(filter));
+
+            if (filteredCustomers.length === 0) {
+                listDiv.innerHTML = `<div class="empty-state"><p>कोई उधार वाला ग्राहक नहीं है।</p></div>`;
+            } else {
+                listDiv.innerHTML = filteredCustomers
+                    .sort((a, b) => new Date(customers[b].transactions[0].date) - new Date(customers[a].transactions[0].date))
+                    .map(name => customerBoxHTML(name, customers[name]))
+                    .join('');
+            }
+        }
+
+        function customerBoxHTML(name, customer) {
+            const balanceType = customer.balance > 0 ? 'due' : 'paid';
+            return `
+            <div class="customer-box" onclick="showCustomerDetail('${name}')">
+                <div class="customer-box-header balance-${balanceType}">
+                    <span class="customer-name">${name}</span>
+                    <span class="customer-balance ${balanceType}">₹${Math.abs(customer.balance)}</span>
+                </div>
+            </div>`;
+        }
+
+        // --- Page & Popup Navigation ---
+        function switchTab(pageId) {
+            if (document.getElementById(pageId).classList.contains('active')) return;
+            
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
+            
+            document.getElementById(pageId).classList.add('active');
+            document.querySelector(`.tab-button[data-page="${pageId}"]`).classList.add('active');
+            history.pushState({page: pageId}, '', `#${pageId}`);
+
+            if (pageId === 'udharBahiPage') renderBahiPage();
+            if (pageId === 'settingsPage') {
+                document.getElementById('newLedgerName').value = ledgerName;
+                populateThemeSelector();
+                applyTheme(localStorage.getItem('khataBahiTheme') || 'light');
+            }
+        }
+        function openPopup(innerHTML) {
+            const popupOverlay = document.getElementById('popupOverlay');
+            popupOverlay.innerHTML = `<div class="popup">${innerHTML}</div>`;
+            popupOverlay.style.display = 'flex';
+            history.pushState({popup: 'open'}, '', location.href);
+        }
+        function closePopup() {
+            document.getElementById('popupOverlay').style.display = 'none';
+        }
+        function openTransactionPopup() {
+            const content = `
+                <div class="popup-header">
+                    <h2 class="popup-title">नया लेन-देन</h2>
+                    <button class="close-btn" onclick="history.back()"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="popup-content">
+                    <div class="toggle-switch">
+                        <button id="creditToggle" class="toggle-btn active" onclick="toggleTransactionType('credit')">उधार दिया</button>
+                        <button id="debitToggle" class="toggle-btn" onclick="toggleTransactionType('debit')">जमा लिया</button>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">ग्राहक का नाम</label>
+                        <input type="text" id="customerName" class="form-input" placeholder="नाम लिखें..." oninput="handleAutocomplete()">
+                        <div class="autocomplete-results" id="autocompleteResults"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">रकम (₹)</label>
+                        <input type="number" id="txAmount" class="form-input" placeholder="कितने रुपये">
+                    </div>
+                    <div class="form-group" id="descGroup">
+                        <label class="form-label">विवरण (वैकल्पिक)</label>
+                        <input type="text" id="txDesc" class="form-input" placeholder="जैसे - दूध, राशन">
+                    </div>
+                    <button id="saveTxBtn" class="btn btn-primary" onclick="saveTransaction()">उधार सेव करें</button>
+                </div>
+            `;
+            openPopup(content);
+        }
+        
+        // --- Autocomplete and Transaction Logic ---
+        function toggleTransactionType(type) {
+            const creditBtn = document.getElementById('creditToggle');
+            const debitBtn = document.getElementById('debitToggle');
+            const saveBtn = document.getElementById('saveTxBtn');
+            const descGroup = document.getElementById('descGroup');
+            if (type === 'credit') {
+                creditBtn.classList.add('active');
+                debitBtn.classList.remove('active');
+                saveBtn.textContent = 'उधार सेव करें';
+                saveBtn.className = 'btn btn-primary';
+                descGroup.style.display = 'block';
+            } else {
+                debitBtn.classList.add('active');
+                creditBtn.classList.remove('active');
+                saveBtn.textContent = 'जमा सेव करें';
+                saveBtn.className = 'btn btn-success';
+                descGroup.style.display = 'none';
+            }
+        }
+        
+        function handleAutocomplete() {
+            const input = document.getElementById('customerName');
+            const resultsDiv = document.getElementById('autocompleteResults');
+            const filter = input.value.toLowerCase();
+            if (!filter) { resultsDiv.innerHTML = ''; return; }
+            const allCustomerNames = [...Object.keys(customers), ...Object.keys(historyLog)];
+            const uniqueNames = [...new Set(allCustomerNames)];
+            const matches = uniqueNames.filter(name => name.toLowerCase().includes(filter));
+            resultsDiv.innerHTML = matches.map(name => `<div class="autocomplete-item" onclick="selectCustomer('${name}')">${name}</div>`).join('');
+        }
+
+        function selectCustomer(name) {
+            document.getElementById('customerName').value = name;
+            document.getElementById('autocompleteResults').innerHTML = '';
+        }
+
+        function saveTransaction() {
+            const type = document.getElementById('creditToggle').classList.contains('active') ? 'credit' : 'debit';
+            const name = document.getElementById('customerName').value.trim();
+            const amount = parseFloat(document.getElementById('txAmount').value);
+            const desc = type === 'credit' ? (document.getElementById('txDesc').value.trim() || 'उधार') : 'जमा';
+
+            if (!name || isNaN(amount) || amount <= 0) { alert('कृपया सही नाम और रकम डालें।'); return; }
+            
+            if (!customers[name] && historyLog[name]) {
+                if (confirm(`${name} का खाता हिस्ट्री में है। क्या आप दोबारा शुरू करना चाहते हैं?`)) {
+                    customers[name] = historyLog[name];
+                    delete historyLog[name];
+                } else { return; }
+            }
+            if (!customers[name]) { customers[name] = { balance: 0, transactions: [] }; }
+
+            if (type === 'credit') { customers[name].balance += amount; } 
+            else { customers[name].balance -= amount; }
+            
+            customers[name].transactions.unshift({ type, amount, desc, date: new Date().toISOString() });
+
+            const isSettled = customers[name].balance === 0;
+            saveData();
+            
+            if (isSettled) { settleAccount(name); }
+
+            renderHomePage();
+            if (document.getElementById('udharBahiPage').classList.contains('active')) {
+                renderBahiPage();
+            }
+            history.back(); // Close popup
+        }
+
+        function settleAccount(name) {
+            setTimeout(() => {
+                if (confirm(`${name} का हिसाब (₹0) पूरा हो गया है। क्या आप इसे हिस्ट्री में सेव करना चाहते हैं?`)) {
+                    historyLog[name] = customers[name];
+                    delete customers[name];
+                    saveData();
+                    renderHomePage();
+                    alert(`${name} का खाता हिस्ट्री में सेव हो गया है।`);
+                }
+            }, 100);
+        }
+
+        // --- Customer Detail Page Logic ---
+        function showCustomerDetail(name, fromHistory = false) {
+            const page = document.getElementById('customerDetailPage');
+            const customerData = fromHistory ? historyLog[name] : customers[name];
+            if (!customerData) return;
+
+            const balanceText = fromHistory ? 'हिसाब पूरा' : `₹${Math.abs(customerData.balance)} ${customerData.balance > 0 ? 'लेना है' : 'एडवांस'}`;
+            
+            page.innerHTML = `
+                <div class="detail-header">
+                    <button class="back-btn" onclick="history.back()"><i class="fas fa-arrow-left"></i></button>
+                    <div class="detail-header-info">
+                        <h2>${name}</h2>
+                        <p>${balanceText}</p>
+                    </div>
+                </div>
+                <div class="detail-actions">
+                    <button class="btn btn-primary" style="flex:1;" onclick="downloadStatementAsImage('${name}', ${fromHistory})"><i class="fas fa-download"></i> स्टेटमेंट डाउनलोड</button>
+                </div>
+                <div class="transaction-list">
+                    ${customerData.transactions.map(t => `
+                        <div class="transaction ${t.type}">
+                            <div>
+                                <div class="desc">${t.desc}</div>
+                                <div class="date">${new Date(t.date).toLocaleDateString('hi-IN', {day:'numeric', month:'short', year:'numeric'})}</div>
+                            </div>
+                            <div class="amount">${t.type === 'credit' ? '+' : '-'}₹${t.amount}</div>
+                        </div>
+                    `).join('') || `<div class="empty-state">कोई लेन-देन नहीं है।</div>`}
+                </div>
+            `;
+            page.classList.add('active');
+            history.pushState({customer: name}, '', `#customer/${name}`);
+        }
+
+        function hideCustomerDetail() {
+            document.getElementById('customerDetailPage').classList.remove('active');
+        }
+        
+        // --- Settings & Extra Features ---
+        function updateLedgerName() {
+            const newName = document.getElementById('newLedgerName').value.trim();
+            if (newName) {
+                ledgerName = newName;
+                document.getElementById('ledgerNameHeader').textContent = ledgerName;
+                saveData();
+                alert('नाम अपडेट हो गया है!');
+            }
+        }
+        function populateThemeSelector() {
+            const selector = document.getElementById('themeSelector');
+            if(!selector) return;
+            selector.innerHTML = themes.map(theme => `
+                <div class="theme-button" data-themeid="${theme.id}" onclick="applyTheme('${theme.id}')">
+                    <div class="theme-preview" style="background: var(--${theme.id}-color, var(--primary-color));"></div>
+                    ${theme.name}
+                </div>`).join('');
+        }
+        function applyTheme(themeId) {
+            document.documentElement.setAttribute('data-theme', themeId);
+            localStorage.setItem('khataBahiTheme', themeId);
+            document.querySelectorAll('.theme-button').forEach(btn => btn.classList.remove('active'));
+            const activeButton = document.querySelector(`.theme-button[data-themeid="${themeId}"]`);
+            if (activeButton) activeButton.classList.add('active');
+        }
+        function exportData() {
+            const dataToExport = { customers, historyLog, ledgerName };
+            const dataStr = JSON.stringify(dataToExport, null, 2);
+            const blob = new Blob([dataStr], {type: "application/json"});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `khata-bahi-backup-${new Date().toISOString().slice(0,10)}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            alert('डेटा एक्सपोर्ट हो गया है!');
+        }
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (confirm('क्या आप वाकई डेटा इम्पोर्ट करना चाहते हैं? मौजूदा सारा डेटा बदल दिया जाएगा।')) {
+                        customers = data.customers || {};
+                        historyLog = data.historyLog || {};
+                        ledgerName = data.ledgerName || 'खाता बही';
+                        saveData();
+                        alert('डेटा सफलतापूर्वक इम्पोर्ट हो गया!');
+                        location.reload();
+                    }
+                } catch (error) { alert('फाइल खराब या गलत फॉर्मेट में है।'); }
+            };
+            reader.readAsText(file);
+        }
+        function deleteAllData() {
+            if (confirm("चेतावनी! क्या आप वाकई सारा डेटा हटाना चाहते हैं? यह वापस नहीं आएगा।")) {
+                localStorage.removeItem('khataBahiCustomers');
+                localStorage.removeItem('khataBahiHistory');
+                localStorage.removeItem('khataBahiLedgerName');
+                alert('सारा डेटा हटा दिया गया है।');
+                location.reload();
+            }
+        }
+        function downloadStatementAsImage(name, fromHistory) {
+            const customerData = fromHistory ? historyLog[name] : customers[name];
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const lineHeight = 30; const padding = 20;
+            canvas.width = 500;
+            canvas.height = (customerData.transactions.length * lineHeight) + 200;
+            ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--background-secondary').trim();
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--text-primary').trim();
+            ctx.font = 'bold 24px Poppins';
+            ctx.fillText(ledgerName, padding, padding + 20);
+            ctx.font = '16px Poppins';
+            ctx.fillText(`ग्राहक: ${name}`, padding, padding + 50);
+            ctx.textAlign = 'right';
+            ctx.fillText(`दिनांक: ${new Date().toLocaleDateString('hi-IN')}`, canvas.width - padding, padding + 20);
+            ctx.font = 'bold 20px Poppins';
+            const balanceText = fromHistory ? 'बकाया: ₹0 (हिसाब पूरा)' : `बकाया: ₹${customerData.balance}`;
+            ctx.fillStyle = customerData.balance > 0 ? '#dc2626' : '#10b981';
+            ctx.fillText(balanceText, canvas.width - padding, padding + 50);
+            let y = 120;
+            ctx.textAlign = 'left';
+            customerData.transactions.forEach(t => {
+                ctx.font = '14px Poppins';
+                ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--text-secondary').trim();
+                const date = new Date(t.date).toLocaleDateString('hi-IN');
+                ctx.fillText(`${date} - ${t.desc}`, padding, y);
+                ctx.font = 'bold 16px Poppins';
+                ctx.fillStyle = t.type === 'credit' ? '#dc2626' : '#10b981';
+                ctx.textAlign = 'right';
+                ctx.fillText(`${t.type === 'credit' ? '+' : '-'}₹${t.amount}`, canvas.width - padding, y);
+                ctx.textAlign = 'left';
+                y += lineHeight;
+            });
+            const link = document.createElement('a');
+            link.download = `${name}-statement-${new Date().toISOString().slice(0,10)}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+
+        // --- Back Button Navigation ---
+        window.addEventListener('popstate', (e) => handleBackButton(e.state));
+        function handleBackButton(state) {
+            if (document.getElementById('popupOverlay').style.display === 'flex') {
+                closePopup();
+                return;
+            }
+            if (document.getElementById('customerDetailPage').classList.contains('active')) {
+                hideCustomerDetail();
+                renderHomePage();
+                return;
+            }
+            const pageId = (state && state.page) ? state.page : 'homePage';
+            if (!document.getElementById(pageId).classList.contains('active')) {
+                switchTab(pageId);
+            }
+        }
+    </script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('service-worker.js')
+            .then(reg => console.log('Service worker registered.'))
+            .catch(err => console.log('Service worker registration failed: ', err));
+        });
+      }
+    </script>
+</body>
+</html>
