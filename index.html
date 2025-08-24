@@ -147,13 +147,12 @@
     </style>
 </head>
 <body>
-
     <div id="appContainer">
         <div id="homePage" class="page active">
             <div class="header"><h1 id="ledgerNameHeader">खाता बही</h1></div>
             <div class="content-padding">
                 <button class="btn btn-secondary" style="width:100%;" onclick="toggleDashboard()">
-                    <i class="fas fa-chart-bar"></i> डैशबोर्ड दिखाएं/छुपाएं
+                    <i class="fas fa-chart-bar"></i> My Store
                 </button>
                 <div id="dashboardContainer" style="display: none;">
                     <div class="dashboard-grid">
@@ -470,7 +469,7 @@
 
     function updateTxTotal() {
         let total = 0;
-        document.querySelectorAll('.item-entry').forEach(item => {
+        document.querySelectorAll('#item-list .item-entry').forEach(item => {
             const price = parseFloat(item.querySelector('.item-price').value) || 0;
             total += price;
         });
@@ -481,7 +480,35 @@
         }
     }
     
-    function saveTransaction(type) { /* Unchanged from previous correct version */ }
+    function saveTransaction(type) {
+        const name = document.getElementById('customerName').value.trim();
+        const amount = parseFloat(document.getElementById('txAmount').value);
+        if (!name || isNaN(amount) || amount <= 0) { alert('कृपया सही नाम और रकम डालें।'); return; }
+        if (!customers[name]) { 
+            customers[name] = { balance: 0, transactions: [], phone: '' }; 
+            logAction(`नया ग्राहक बनाया: '${name}'`);
+        }
+        let transaction;
+        if (type === 'credit') {
+            customers[name].balance += amount;
+            const items = Array.from(document.querySelectorAll('.item-entry')).map(item => ({ name: item.querySelector('.item-name').value.trim() || 'सामान', price: parseFloat(item.querySelector('.item-price').value) || 0 })).filter(item => item.price > 0);
+            if (items.length === 0) { alert('कृपया कम से कम एक सामान और उसकी कीमत डालें।'); return; }
+            transaction = { type, amount, items, date: new Date().toISOString(), balanceAfter: customers[name].balance };
+            logAction(`'${name}' को ₹${amount} का उधार दिया।`);
+        } else {
+            customers[name].balance -= amount;
+            const method = document.getElementById('txMethod').value.trim() || 'N/A';
+            transaction = { type, amount, items: [{name: 'जमा राशि', price: amount}], method: method, date: new Date().toISOString(), balanceAfter: customers[name].balance };
+            logAction(`'${name}' से ₹${amount} जमा किये (${method})।`);
+        }
+        customers[name].transactions.unshift(transaction);
+        saveData();
+        updateAllUI();
+        closePopup();
+        if (document.getElementById('customerDetailPage').classList.contains('active')) {
+            showCustomerDetail(name);
+        }
+    }
     
     function showCustomerDetail(name) {
         const page = document.getElementById('customerDetailPage');
@@ -516,10 +543,28 @@
         history.pushState({customer: name}, '', `#customer/${name}`);
     }
 
-    function transactionHTML(t) { /* Unchanged from previous correct version */ }
+    function transactionHTML(t) {
+        const isCredit = t.type === 'credit';
+        let title = isCredit ? (t.items.length > 1 ? `${t.items.length} सामान ख़रीदे` : t.items[0].name) : 'जमा राशि';
+        if (!isCredit && t.method && t.method !== 'N/A') { title += ` (${t.method})`; }
+        let balanceAfterText = '';
+        if (typeof t.balanceAfter !== 'undefined') {
+            if (t.balanceAfter > 0) { balanceAfterText = `बकाया: ₹${t.balanceAfter}`; }
+            else if (t.balanceAfter < 0) { balanceAfterText = `एडवांस: ₹${Math.abs(t.balanceAfter)}`; }
+            else { balanceAfterText = `बकाया: ₹0`; }
+        }
+        return `<div class="transaction ${t.type}"><div class="transaction-details"><div class="desc">${title}</div><div class="date">${new Date(t.date).toLocaleString('hi-IN', {day:'numeric', month:'short', year:'numeric', hour:'numeric', minute:'2-digit'})}</div>${isCredit ? `<div class="transaction-items">${t.items.map(item => `<div><span class="item-price">₹${item.price}</span> <span class="item-name">${item.name}</span></div>`).join('')}</div>` : ''}${balanceAfterText ? `<div class="running-balance">इस लेन-देन के बाद ${balanceAfterText}</div>` : ''}</div><div class="transaction-amount">${isCredit ? '+' : '-'}₹${t.amount}</div></div>`;
+    }
+
     function hideCustomerDetail() { document.getElementById('customerDetailPage').classList.remove('active'); }
     function printCustomerStatement() { window.print(); }
-    function openCustomerEditPopup(name) { /* Unchanged from previous correct version */ }
+
+    function openCustomerEditPopup(name) {
+        const data = customers[name];
+        const escapedName = name.replace(/'/g, "\\'");
+        const content = `<div class="popup-header"><h2 class="popup-title">ग्राहक एडिट करें</h2><button class="close-btn" onclick="closePopup()">&times;</button></div><div class="popup-content"><div class="form-group"><label class="form-label">ग्राहक का नाम</label><input type="text" id="editCustomerName" class="form-input" value="${name}"></div><div class="form-group"><label class="form-label">फोन नंबर</label><input type="tel" id="editCustomerPhone" class="form-input" value="${data.phone || ''}" placeholder="जैसे 9876543210"></div><button class="btn btn-primary" onclick="saveCustomerDetails('${escapedName}')"><i class="fas fa-save"></i> सेव करें</button></div>`;
+        openPopup(content);
+    }
     
     function saveCustomerDetails(oldName) {
         const newName = document.getElementById('editCustomerName').value.trim();
@@ -542,13 +587,72 @@
         showCustomerDetail(newName);
     }
     
-    // --- Settings & Other Functions ---
-    function updateLedgerName() { /* Unchanged from previous correct version */ }
-    function populateThemeSelector() { /* Unchanged from previous correct version */ }
-    function applyTheme(themeId) { /* Unchanged from previous correct version */ }
-    function exportData() { /* Unchanged from previous correct version */ }
-    function importData(event) { /* Unchanged from previous correct version */ }
-    function deleteAllData() { /* Unchanged from previous correct version */ }
+    function updateLedgerName() {
+        const newName = document.getElementById('newLedgerName').value.trim();
+        if (newName) {
+            ledgerName = newName;
+            document.getElementById('ledgerNameHeader').textContent = ledgerName;
+            logAction(`बही का नाम बदलकर '${newName}' किया गया।`);
+            saveData();
+            alert('नाम अपडेट हो गया है!');
+        }
+    }
+    function populateThemeSelector() {
+        const selector = document.getElementById('themeSelector');
+        if(!selector) return;
+        selector.innerHTML = themes.map(theme => `<div class="theme-button" data-themeid="${theme.id}" onclick="applyTheme('${theme.id}')"><div class="theme-preview" style="background-color: ${theme.color};"></div>${theme.name}</div>`).join('');
+    }
+    function applyTheme(themeId) {
+        document.documentElement.setAttribute('data-theme', themeId);
+        localStorage.setItem('khataBahiTheme', themeId);
+        document.querySelectorAll('.theme-button').forEach(btn => btn.classList.remove('active'));
+        const activeButton = document.querySelector(`.theme-button[data-themeid="${themeId}"]`);
+        if (activeButton) activeButton.classList.add('active');
+    }
+    function exportData() {
+        const dataToExport = { customers, actionLog, ledgerName };
+        const dataStr = JSON.stringify(dataToExport, null, 2);
+        const blob = new Blob([dataStr], {type: "application/json"});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `khata-bahi-backup-${new Date().toISOString().slice(0,10)}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+        alert('डेटा एक्सपोर्ट हो गया है!');
+    }
+    function importData(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const data = JSON.parse(e.target.result);
+                if (confirm('क्या आप वाकई डेटा इम्पोर्ट करना चाहते हैं? मौजूदा सारा डेटा बदल दिया जाएगा।')) {
+                    customers = data.customers || {};
+                    actionLog = data.actionLog || [];
+                    ledgerName = data.ledgerName || 'खाता बही';
+                    saveData();
+                    alert('डेटा सफलतापूर्वक इम्पोर्ट हो गया!');
+                    location.reload();
+                }
+            } catch (error) { alert('फाइल खराब या गलत फॉर्मेट में है।'); }
+        };
+        reader.readAsText(file);
+    }
+    function deleteAllData() {
+        if (confirm("चेतावनी! क्या आप वाकई सारा डेटा हटाना चाहते हैं? यह पहला कन्फर्मेशन है।")) {
+            if (confirm("यह दूसरा कन्फर्मेशन है। आपका सारा डेटा हमेशा के लिए डिलीट हो जाएगा। क्या आप निश्चित हैं?")) {
+                if (confirm("यह आखिरी चेतावनी है! इसके बाद डेटा वापस नहीं आएगा। डिलीट करने के लिए OK दबाएं।")) {
+                    localStorage.removeItem('khataBahiCustomers');
+                    localStorage.removeItem('khataBahiActionLog');
+                    localStorage.removeItem('khataBahiLedgerName');
+                    alert('सारा डेटा हटा दिया गया है।');
+                    location.reload();
+                }
+            }
+        }
+    }
 
     // --- Back Button Navigation ---
     window.addEventListener('popstate', (e) => {
@@ -556,7 +660,9 @@
         else if (document.getElementById('customerDetailPage').classList.contains('active')) { hideCustomerDetail(); }
         else {
             const pageId = (e.state && e.state.page) ? e.state.page : 'homePage';
-            if (!document.getElementById(pageId)?.classList.contains('active')) { switchTab(pageId); }
+            if (!document.getElementById(pageId)?.classList.contains('active')) {
+                switchTab(pageId);
+            }
         }
     });
     </script>
