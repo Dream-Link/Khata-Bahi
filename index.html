@@ -146,82 +146,82 @@
 
         /* --->>> प्रिंट के लिए अंतिम और सही स्टाइल <<<--- */
         @media print {
-            body, html {
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
-                background: #fff !important;
-                margin: 0 !important;
-                padding: 0 !important;
-                height: auto !important;
-                overflow: visible !important;
-                min-height: unset !important;
-                display: block !important;
-            }
-            .tab-bar, .fab, .detail-actions, .detail-header, .header { 
-                display: none !important; 
-            }
-            #appContainer { 
-                overflow: visible !important; 
-                height: auto !important;
-                display: block !important;
-            }
-            .customer-detail-page {
-                position: static !important;
-                transform: none !important;
-                box-shadow: none !important;
-                border: none !important;
-                padding: 20px;
-                display: block !important;
-                height: auto !important;
-                overflow: visible !important;
-            }
-            body * { 
-                visibility: hidden; 
-            }
-            .customer-detail-page, .customer-detail-page * { 
-                visibility: visible; 
-            }
-            #print-summary-box {
-                border: 1.5px solid black;
-                border-radius: 8px;
-                padding: 15px;
-                margin-bottom: 20px;
-                page-break-inside: avoid;
-            }
-            #print-header {
-                display: block !important;
-                text-align: center;
-                border: none !important;
-                padding: 0;
-                margin-bottom: 15px;
-                border-top: none !important;
-            }
-            .detail-balance-card {
-                margin: 0 !important;
-                border: none !important;
-                box-shadow: none !important;
-                background: transparent !important;
-            }
-            .transaction {
-                box-shadow: none !important;
-                border: 1px solid #ccc !important;
-                page-break-inside: avoid !important;
-                background: transparent !important;
-            }
-            .transaction.credit { 
-                background-color: #ffebee !important; 
-            }
-            .transaction.debit { 
-                background-color: #e8f5e9 !important; 
-            }
+            /* --->>> पुरानी सभी @media print स्टाइल हटाकर यह नया और सही ब्लॉक डालें <<<--- */
+@media print {
+    html, body, #appContainer {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        position: static !important;
+        display: block !important;
+        float: none !important;
+        width: auto !important;
+        height: auto !important;
+        min-height: unset !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: visible !important;
+        background: #fff !important;
+    }
 
-            .transaction-amount.due, .value.due { color: #d32f2f !important; }
-            .transaction-amount.advance, .value.advance, .value.settled { color: #388e3c !important; }
-            .transaction-items, .transaction-details .taker { display: block !important; }
-        }
-        #print-header { 
-            display: none; 
-        }
+    .tab-bar, .fab, .detail-actions, .detail-header, .header {
+        display: none !important;
+    }
+
+    body * {
+        visibility: hidden;
+    }
+
+    .customer-detail-page {
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100%;
+        padding: 20mm; /* कागज़ पर प्रिंट के लिए स्टैंडर्ड मार्जिन */
+        box-sizing: border-box;
+        box-shadow: none !important;
+        border: none !important;
+    }
+    
+    .customer-detail-page, .customer-detail-page * {
+        visibility: visible;
+    }
+
+    #print-summary-box {
+        border: 1.5px solid black;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 20px;
+        page-break-inside: avoid;
+    }
+
+    #print-header {
+        display: block !important;
+        text-align: center;
+        border: none !important;
+        padding: 0;
+        margin-bottom: 15px;
+    }
+
+    .detail-balance-card {
+        margin: 0 !important;
+        border: none !important;
+        box-shadow: none !important;
+        background: transparent !important;
+    }
+
+    .transaction {
+        box-shadow: none !important;
+        border: 1px solid #ccc !important;
+        page-break-inside: avoid !important;
+        background: transparent !important;
+    }
+
+    .transaction.credit { background-color: #ffebee !important; }
+    .transaction.debit { background-color: #e8f5e9 !important; }
+    .transaction-amount.due, .value.due { color: #d32f2f !important; }
+    .transaction-amount.advance, .value.advance, .value.settled { color: #388e3c !important; }
+    .transaction-items, .transaction-details .taker { display: block !important; }
+}
     </style>
 </head>
 <body>
